@@ -1,7 +1,8 @@
 import RideCard from "@/components/RideCard";
+import { icons, images } from "@/constants";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
-import { FlatList, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const recentRides = [
@@ -113,11 +114,46 @@ const recentRides = [
 
 const Home = () => {
   const { user } = useUser();
+  const loading = true;
+
+const handleSignOut = () => {};
+
   return (
     <SafeAreaView className="bg-general-500">
       <FlatList
         data={recentRides.slice(0, 5)}
         renderItem={({ item }) => <RideCard ride={item} />}
+        className="px-5"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 100 }}
+        ListEmptyComponent={() => (
+          <View className="flex flex-col items-center justify-center">
+            {!loading ? (
+              <>
+                <Image
+                  source={images.noResult}
+                  className="w-40 h-40"
+                  alt="No recent rides found"
+                  resizeMode="contain"
+                />
+                <Text className="text-sm">No recent rides found</Text>
+              </>
+            ) : (
+              <ActivityIndicator size={"large"} color={"black"} />
+            )}
+          </View>
+        )}
+
+        ListHeaderComponent={() => (
+          <>
+            <View className="flex flex-row items-center justify-between my-5" >
+              <Text className="text-2xl capitalize font-JakartaExtraBold" >Welcome,  {user?.fullName || user?.emailAddresses[0].emailAddress.split("@")[0]} 👋</Text>
+              <TouchableOpacity onPress={handleSignOut} className="justify-center items-center w-10 h-10 rounded-full bg-white">
+                <Image source={icons.out} className="w-7 h-7"/>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       />
     </SafeAreaView>
   );
