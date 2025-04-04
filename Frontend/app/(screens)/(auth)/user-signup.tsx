@@ -1,12 +1,13 @@
 import { icons, images } from "@/constants";
-import { ScrollView, View, Text, Image, Alert } from "react-native";
+import { ScrollView, View, Text, Image } from "react-native";
 import { useState } from "react";
 import { Link, router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Store token
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import InputField from "@/components/InputField";
 import CustomButton from "@/components/CustomButton";
 import OAuth from "@/components/OAuth";
 
+import Toast from "react-native-toast-message";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -38,7 +39,6 @@ const SignUp = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token
         await AsyncStorage.setItem("userToken", data.token);
         await AsyncStorage.setItem(
           "userData",
@@ -49,19 +49,32 @@ const SignUp = () => {
           })
         );
 
-        // Show success alert
-        Alert.alert("Success", "Sign-up successful!", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(screens)/(user-screens)/home"), // Navigate to Home
-          },
-        ]);
+        Toast.show({
+          type: "success",
+          text1: "Sign-up Successful 🎉",
+          text2: "Redirecting to login...",
+          position: "top",
+        });
+
+        setTimeout(() => {
+          router.replace("/(screens)/(auth)/user-signin");
+        }, 1000);
       } else {
-        Alert.alert("Error", data.message || "Something went wrong!");
+        Toast.show({
+          type: "error",
+          text1: "Sign-up Failed",
+          text2: data.message || "Something went wrong!",
+          position: "top",
+        });
       }
     } catch (error) {
       console.error("Sign-up failed:", error);
-      Alert.alert("Error", "Sign-up failed. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Network Error",
+        text2: "Please try again later.",
+        position: "top",
+      });
     }
   };
 
@@ -122,6 +135,7 @@ const SignUp = () => {
           </Link>
         </View>
       </View>
+      <Toast />
     </ScrollView>
   );
 };
