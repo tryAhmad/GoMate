@@ -23,13 +23,16 @@ const SignIn = () => {
     };
 
     try {
-      const response = await fetch("http://192.168.0.102:5000/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `http://${process.env.EXPO_PUBLIC_USERIP}:5000/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
 
@@ -51,11 +54,11 @@ const SignIn = () => {
           text2: data.message || "Invalid credentials 😞",
         });
       }
-    } catch (error) {
+    } catch (error:any) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Something went wrong!",
+        text2: `Something went wrong! - ${error.message}`,
       });
     }
   };
@@ -73,6 +76,7 @@ const SignIn = () => {
           <InputField
             label="Email"
             placeholder="Enter your Email"
+            placeholderTextColor={"grey"}
             icon={icons.email}
             value={form.email}
             onChangeText={(value) => setForm({ ...form, email: value })}
@@ -80,8 +84,10 @@ const SignIn = () => {
           <InputField
             label="Password"
             placeholder="Enter your password"
+            placeholderTextColor={"grey"}
             icon={icons.lock}
             secureTextEntry={true}
+            inputStyle="color-black"
             value={form.password}
             onChangeText={(value) => setForm({ ...form, password: value })}
           />

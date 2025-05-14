@@ -39,7 +39,7 @@ const Profile = () => {
         if (!userToken) throw new Error("No user token found");
 
         const response = await fetch(
-          "http://192.168.0.102:5000/users/profile",
+          `http://${process.env.EXPO_PUBLIC_USERIP}:5000/users/profile`,
           {
             headers: { Authorization: `Bearer ${userToken}` },
           }
@@ -114,7 +114,8 @@ const Profile = () => {
           {/* Back and Title */}
           <View className="flex-row items-center">
             <TouchableOpacity
-              onPress={() => router.replace("/(screens)/(user-screens)/home")}
+              //onPress={() => router.replace("/(screens)/(user-screens)/home")}
+              onPress={() => router.back()}
               className="mr-4"
             >
               <Image source={icons.backArrow} className="w-6 h-6" />
@@ -148,6 +149,7 @@ const Profile = () => {
           <InputField
             label="First Name"
             placeholder={userData.fullname.firstname || "Not Found"}
+            placeholderTextColor={"black"}
             containerStyle="w-full"
             inputStyle="p-3.5"
             editable={false}
@@ -156,6 +158,7 @@ const Profile = () => {
           <InputField
             label="Last Name"
             placeholder={userData.fullname.lastname || "Not Found"}
+            placeholderTextColor={"black"}
             containerStyle="w-full"
             inputStyle="p-3.5"
             editable={false}
@@ -164,10 +167,13 @@ const Profile = () => {
           <InputField
             label="Email"
             placeholder={userData.email || "Not Found"}
+            placeholderTextColor={"black"}
             containerStyle="w-full"
             inputStyle="p-3.5"
             editable={false}
           />
+
+          
         </View>
       </ScrollView>
       <Toast />

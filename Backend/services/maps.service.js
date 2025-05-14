@@ -12,8 +12,8 @@ module.exports.getAddressCoordinate = async (address) => {
     if (response.data.status === "OK") {
       const location = response.data.results[0].geometry.location;
       return {
-        ltd: location.lat,
-        lng: location.lng,
+        latitude: location.lat,
+        longitude: location.lng,
       };
     } else {
       throw new Error("Unable to fetch coordinates");
@@ -60,7 +60,7 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
   const apiKey = process.env.GOOGLE_MAPS_API;
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
     input
-  )}&key=${apiKey}`;
+  )}&components=country:pk&key=${apiKey}`;
 
   try {
     const response = await axios.get(url);

@@ -28,13 +28,16 @@ const SignUp = () => {
     };
 
     try {
-      const response = await fetch("http://192.168.0.102:5000/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `http://${process.env.EXPO_PUBLIC_USERIP}:5000/users/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
 
@@ -91,6 +94,7 @@ const SignUp = () => {
           <InputField
             label="First Name"
             placeholder="Enter your first name"
+            placeholderTextColor={"grey"}
             icon={icons.person}
             value={form.firstname}
             onChangeText={(value) => setForm({ ...form, firstname: value })}
@@ -98,6 +102,7 @@ const SignUp = () => {
           <InputField
             label="Last Name"
             placeholder="Enter your last name"
+            placeholderTextColor={"grey"}
             icon={icons.person}
             value={form.lastname}
             onChangeText={(value) => setForm({ ...form, lastname: value })}
@@ -105,6 +110,7 @@ const SignUp = () => {
           <InputField
             label="Email"
             placeholder="Enter your Email"
+            placeholderTextColor={"grey"}
             icon={icons.email}
             value={form.email}
             onChangeText={(value) => setForm({ ...form, email: value })}
@@ -112,8 +118,10 @@ const SignUp = () => {
           <InputField
             label="Password"
             placeholder="Enter your password"
+            placeholderTextColor={"grey"}
             icon={icons.lock}
             secureTextEntry={true}
+            inputStyle="color-black"
             value={form.password}
             onChangeText={(value) => setForm({ ...form, password: value })}
           />
