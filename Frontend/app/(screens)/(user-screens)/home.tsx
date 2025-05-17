@@ -15,7 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import polyline from "@mapbox/polyline";
 import * as Location from "expo-location";
-import { debounce, pick } from "lodash";
+import { debounce, pick, set } from "lodash";
 import { router } from "expo-router";
 import { icons } from "@/constants";
 import RideSelector from "@/components/RideSelector";
@@ -38,7 +38,7 @@ const HomeScreen = () => {
       moto: 0,
     }
   );
-  const [userFare, setUserFare] = useState<string>("");
+  const [userFare, setUserFare] = useState<number>();
   const [selectedRide, setSelectedRide] = useState<string>("car");
   const [seats, setSeats] = useState<string>("");
   const [date, setDate] = useState<Date>(new Date());
@@ -226,7 +226,7 @@ const HomeScreen = () => {
           mapRef={mapRef}
         />
       )}
-      <View className="absolute top-12 left-5">
+      <View className="absolute top-5 left-5">
         <TouchableOpacity
           onPress={() => router.push("/user-profile")}
           className="bg-white p-3 rounded-full shadow"
@@ -236,7 +236,7 @@ const HomeScreen = () => {
       </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="absolute bottom-0 w-full bg-white p-5 rounded-t-xl shadow-lg"
+        className="absolute bottom-[1px] w-full bg-white p-5 rounded-t-xl shadow-lg"
       >
         <RideSelector
           rideTypes={rideTypes}
@@ -250,23 +250,23 @@ const HomeScreen = () => {
           suggestions={pickupSuggestions}
           showDropdown={showPickupDropdown}
           onChange={(text) => {
-            setPickup(text);
-            fetchSuggestions(text, "pickup");
+        setPickup(text);
+        fetchSuggestions(text, "pickup");
           }}
           onClear={() => {
-            setPickup("");
-            setPickupSuggestions([]);
-            setShowPickupDropdown(false);
-            setFare({ auto: 0, car: 0, moto: 0 });
+        setPickup("");
+        setPickupSuggestions([]);
+        setShowPickupDropdown(false);
+        setFare({ auto: 0, car: 0, moto: 0 });
           }}
           onSelect={async (loc) => {
-            setPickup(loc);
-            setShowPickupDropdown(false);
-            const coords = await fetchCoords(loc, "pickup");
-            mapRef.current?.animateToRegion(
-              { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 },
-              300
-            );
+        setPickup(loc);
+        setShowPickupDropdown(false);
+        const coords = await fetchCoords(loc, "pickup");
+        mapRef.current?.animateToRegion(
+          { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+          300
+        );
           }}
         />
 
@@ -276,134 +276,137 @@ const HomeScreen = () => {
           suggestions={dropoffSuggestions}
           showDropdown={showDropoffDropdown}
           onChange={(text) => {
-            setDropoff(text);
-            fetchSuggestions(text, "dropoff");
+        setDropoff(text);
+        fetchSuggestions(text, "dropoff");
           }}
           onClear={() => {
-            setDropoff("");
-            setDropoffSuggestions([]);
-            setShowDropoffDropdown(false);
-            setFare({ auto: 0, car: 0, moto: 0 });
+        setDropoff("");
+        setDropoffSuggestions([]);
+        setShowDropoffDropdown(false);
+        setFare({ auto: 0, car: 0, moto: 0 });
           }}
           onSelect={async (loc) => {
-            setDropoff(loc);
-            setShowDropoffDropdown(false);
+        setDropoff(loc);
+        setShowDropoffDropdown(false);
 
-            const coords = await fetchCoords(loc, "dropoff");
-            mapRef.current?.animateToRegion(
-              { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 },
-              300
-            );
+        const coords = await fetchCoords(loc, "dropoff");
+        mapRef.current?.animateToRegion(
+          { ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+          300
+        );
           }}
         />
 
         {pickup && dropoff && fare && (
           <View className="bg-slate-200 p-2 rounded mb-2">
-            {selectedRide === "car" || selectedRide === "shared" ? (
-              <Text className="text-black font-JakartaBold">
-                Recommended Fare: {fare.car}
-              </Text>
-            ) : selectedRide === "bike" ? (
-              <Text className="text-black font-JakartaBold">
-                Recommended Fare: {fare.moto}
-              </Text>
-            ) : selectedRide === "rickshaw" ? (
-              <Text className="text-black font-JakartaBold">
-                Recommended Fare: {fare.auto}
-              </Text>
-            ) : null}
+        {selectedRide === "car" || selectedRide === "shared" ? (
+          <Text className="text-black font-JakartaBold">
+            Recommended Fare: {fare.car}
+          </Text>
+        ) : selectedRide === "bike" ? (
+          <Text className="text-black font-JakartaBold">
+            Recommended Fare: {fare.moto}
+          </Text>
+        ) : selectedRide === "rickshaw" ? (
+          <Text className="text-black font-JakartaBold">
+            Recommended Fare: {fare.auto}
+          </Text>
+        ) : null}
           </View>
         )}
 
         <TextInput
-          className="border p-3 rounded-lg mb-4"
+          className="border p-3 rounded-lg mb-4 text-black"
           placeholder="Your Fare (PKR)"
           placeholderTextColor="gray"
-          keyboardType="numeric"
+          keyboardType="numeric"          
         />
 
         {selectedRide === "shared" && (
           <>
-            <TextInput
-              className="border p-3 rounded-lg mb-3"
-              placeholder="Seats (1-4)"
-              placeholderTextColor="gray"
-              keyboardType="numeric"
-              value={seats}
-              onChangeText={(t) => (!t || (+t >= 1 && +t <= 4)) && setSeats(t)}
-              maxLength={1}
-            />
-            <TouchableOpacity
-              className="border p-3 rounded-lg mb-2"
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text>{formatDate(date)}</Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePickerGroup
-                date={date}
-                time={time}
-                showDate
-                showTime={false}
-                onShowDate={() => {}}
-                onShowTime={() => {}}
-                onDateChange={(_, d) => {
-                  if (d) {
-                    setDate(d);
-                  }
-                  setShowDatePicker(false);
-                }}
-                onTimeChange={() => {}}
-              />
-            )}
-            <TouchableOpacity
-              className="border p-3 rounded-lg mb-4"
-              onPress={() => setShowTimePicker(true)}
-            >
-              <Text>{formatTime(time)}</Text>
-            </TouchableOpacity>
-            {showTimePicker && (
-              <DateTimePickerGroup
-                date={date}
-                time={time}
-                showDate={false}
-                showTime
-                onShowDate={() => {}}
-                onShowTime={() => {}}
-                onDateChange={() => {}}
-                onTimeChange={(_, t) => {
-                  if (t) {
-                    setTime(t);
-                  }
-                  setShowTimePicker(false);
-                }}
-              />
-            )}
+        <TextInput
+          className="border p-3 rounded-lg mb-3"
+          placeholder="Seats (1-4)"
+          placeholderTextColor="gray"
+          keyboardType="numeric"
+          value={seats}
+          onChangeText={(t) => (!t || (+t >= 1 && +t <= 4)) && setSeats(t)}
+          maxLength={1}
+        />
+        <TouchableOpacity
+          className="border p-3 rounded-lg mb-2"
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text>{formatDate(date)}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePickerGroup
+            date={date}
+            time={time}
+            showDate
+            showTime={false}
+            onShowDate={() => {}}
+            onShowTime={() => {}}
+            onDateChange={(_, d) => {
+          if (d) {
+            setDate(d);
+          }
+          setShowDatePicker(false);
+            }}
+            onTimeChange={() => {}}
+          />
+        )}
+        <TouchableOpacity
+          className="border p-3 rounded-lg mb-4"
+          onPress={() => setShowTimePicker(true)}
+        >
+          <Text>{formatTime(time)}</Text>
+        </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePickerGroup
+            date={date}
+            time={time}
+            showDate={false}
+            showTime
+            onShowDate={() => {}}
+            onShowTime={() => {}}
+            onDateChange={() => {}}
+            onTimeChange={(_, t) => {
+          if (t) {
+            setTime(t);
+          }
+          setShowTimePicker(false);
+            }}
+          />
+        )}
           </>
         )}
 
         <CustomButton
           title="Find a driver"
           onPress={() => {
-            if (!pickup || !dropoff || !fare)
-              return Toast.show({
-                type: "error",
-                text1: "Please fill all fields",
-              });
-            if (selectedRide === "shared" && (+seats < 1 || +seats > 4))
-              return Toast.show({ type: "error", text1: "Select 1-4 seats" });
-            const rideName =
-              rideTypes.find((r) => r.id === selectedRide)?.name ||
-              selectedRide;
-            const message =
-              selectedRide === "shared"
-                ? `Shared ride for ${seats} seat(s) at ${formatTime(time)} on ${formatDate(date)}`
-                : `Ride type: ${rideName}`;
-            Toast.show({
-              type: "success",
-              text1: "Searching for driver...",
-              text2: message,
-            });
+        if (!pickup || !dropoff || !fare)
+          return Toast.show({
+            type: "error",
+            text1: "Please fill all fields",
+          });
+        if (selectedRide === "shared" && (+seats < 1 || +seats > 4))
+          return Toast.show({ type: "error", text1: "Select 1-4 seats" });
+        const rideName =
+          rideTypes.find((r) => r.id === selectedRide)?.name ||
+          selectedRide;
+        const message =
+          selectedRide === "shared"
+            ? `Shared ride for ${seats} seat(s) at ${formatTime(time)} on ${formatDate(date)}`
+            : `Ride type: ${rideName}`;
+        Toast.show({
+          type: "success",
+          text1: "Searching for driver...",
+          text2: message,
+          onHide: () => {
+            router.push("/find-driver");
+          },
+        });
           }}
         />
       </KeyboardAvoidingView>

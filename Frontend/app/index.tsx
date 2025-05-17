@@ -29,8 +29,8 @@ const Home = () => {
     <Redirect
       href={
         tokenExists
-           ? "/(screens)/(user-screens)/home"
-           : "/(screens)/(auth)/welcome"
+          ? "/(screens)/(user-screens)/home"
+          :  "/(screens)/(auth)/welcome"
       }
     />
   );
